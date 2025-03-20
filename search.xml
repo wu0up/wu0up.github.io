@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>[論文分析] Polaris: A Safety-focused LLM Constellation Architecture for Healthcare</title>
+    <url>/2024/08/29/20240829/</url>
+    <content><![CDATA[<!-- # [論文分析] Polaris: A Safety-focused LLM Constellation Architecture for Healthcare -->
+
+<h3 id="分析目的："><a href="#分析目的：" class="headerlink" title="分析目的："></a>分析目的：</h3><p>想了解大型的multi-agent實際落地的架構，因此分析此篇論文<br><a href="https://arxiv.org/pdf/2403.13313">link</a></p>
+<h3 id="摘要："><a href="#摘要：" class="headerlink" title="摘要："></a>摘要：</h3><p>Polaris是一個專注於安全的醫療大型語言模型（LLM）星座系統，旨在實現實時的患者與AI之間的醫療對話。該系統由一個主要負責對話的代理和多個專門處理醫療任務的支持代理組成，這些任務通常由護理人員、社工和營養師完成。該系統的主要目的是提供非診斷性醫療服務，確保患者在接受醫療過程中得到安全且準確的回應，並通過增強的醫療推理能力減少AI系統的幻覺現象。</p>
+<span id="more"></span>
+
+<p><img src="/images/20240829/structure.png" alt="image"></p>
+<h3 id="Keypoint"><a href="#Keypoint" class="headerlink" title="Keypoint:"></a>Keypoint:</h3><ol>
+<li>整個服務是透過電話&#x2F;語音實現，多倫語音對話<ul>
+<li><strong>Input:</strong> 自動語音識別（ASR）</li>
+<li><strong>Output:</strong> 語音合成（TTS）</li>
+</ul>
+</li>
+<li>Agent監控整個對話流程及Agent併行的設計</li>
+<li>檢查token長度是否超過，超過進行summary</li>
+<li>對話結束，EHR Summary agent 將對話轉成結構化資料</li>
+<li>使用大量對話與料去訓練model</li>
+</ol>
+<h3 id="Polaris-Healthcare-Agents-分析"><a href="#Polaris-Healthcare-Agents-分析" class="headerlink" title="Polaris Healthcare Agents 分析"></a>Polaris Healthcare Agents 分析</h3><p>每個代理使用的模型不同：<br><img src="/images/20240829/model_lst.png" alt="image"></p>
+<ul>
+<li><strong>Primary Agent:</strong> 負責管理整個對話流程，使用LLM來進行醫療推理和對話。單輪對話約20分鐘。</li>
+<li><strong>Privacy &amp; Compliance Specialist:</strong> 驗證患者身份後才會加載PHI信息。<br><img src="/images/20240829/privacy_compliane_agent.png" alt="image"></li>
+<li><strong>Checklist Specialist:</strong> 與Primary Agent併行工作，確認患者的任務是否完成。</li>
+<li><strong>藥物代理：</strong> 監控對話中的藥物使用情況，檢測錯誤並提供劑量建議。<br><img src="/images/20240829/medication_agent.png" alt="image"></li>
+<li><strong>Lab &amp; Vitals Specialist:</strong> 檢索並比較最新的實驗室結果與之前的記錄。<br><img src="/images/20240829/lab_vitals_agent.png" alt="image"></li>
+<li><strong>Nutrition Specialist:</strong> 根據對話歷史，提供膳食攝入量建議和營養指導。<br><img src="/images/20240829/nutrition_agent.png" alt="image"></li>
+<li><strong>Hospital &amp; Payor Policy Specialist:</strong> 使用檢索增強生成（RAG）模型簡化政策問題。<br><img src="/images/20240829/hospital_payor_agent.png" alt="image"></li>
+<li><strong>EHR Summary Specialist:</strong> 提取對話中的臨床字段並填入電子健康記錄（EHR）。<br><img src="/images/20240829/ehr_summary_agent.png" alt="image"></li>
+<li><strong>Human Intervention Specialist:</strong> 在對話過程中檢測症狀並決定是否需要人工干預。<br><img src="/images/20240829/human_intervention_agent.png" alt="image"></li>
+</ul>
+<hr>
+<!-- <!-- Place this tag in your head or just before your close body tag. -->
+<!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
+<!-- <!-- Place this tag where you want the button to render. -->
+
+<!-- Please <a class="github-button" href="https://github.com/YenYuHsuan/hexo-theme-beantech" data-icon="octicon-star" aria-label="Star YenYuHsuan/hexo-theme-beantech on GitHub">Star</a> this Project if you like it! <a class="github-button" href="https://github.com/YenYuHsuan" aria-label="Follow @wu0up on GitHub">Follow</a> would also be appreciated!
+Peace! -->]]></content>
+      <tags>
+        <tag>paper</tag>
+        <tag>Architecture</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>[論文分析] A Survey on Large Language Model based Autonomous Agents</title>
+    <url>/2024/09/02/20240902/</url>
+    <content><![CDATA[<!-- # [論文分析] A Survey on Large Language Model based Autonomous Agents -->
+
+<p><strong>設計LLM代理架構：如何支援工作流程、管理記憶與評估效能</strong></p>
+<p>為什麼讀這篇論文：目前正在開發平台，因此選擇這篇論文，想了解代理開發的框架</p>
+<span id="more"></span>
+
+<p>針對自動化代理平台設計，本篇提供統一框架：</p>
+<ul>
+<li>輪廓模組（Profiling Module）：設定代理角色的基本屬性（例如年齡、性別、職業等）。</li>
+<li>記憶模組（Memory Module）：短期和長期記憶幫助代理記錄並使用過去的行為來規劃未來。</li>
+<li>規劃模組（Planning Module）：代理根據任務分解目標，規劃步驟並調整行動。</li>
+<li>行動模組（Action Module）：將規劃轉化為具體的行為並與環境互動。</li>
+</ul>
+<p> <img src="/images/20240902/agent_architecture.png" alt="image"></p>
+<p>將會針對Profiling Module和Planning Module進行筆記；</p>
+<h3 id="1-該選用哪一種Profiling-Module的方法？"><a href="#1-該選用哪一種Profiling-Module的方法？" class="headerlink" title="1. 該選用哪一種Profiling Module的方法？"></a>1. 該選用哪一種Profiling Module的方法？</h3><p>針對此篇paper介紹的Profiling Module三種方法，整理成表格：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Handcrafting Method</th>
+<th>LLM-generation Method</th>
+<th>Dataset Alignment Method</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>簡介</strong></td>
+<td>手動設計代理的配置，包括人格特徵和職責。</td>
+<td>利用LLM自動生成代理配置，基於配置生成規則和少樣本示例。</td>
+<td>基於真實數據集或現有用戶行為數據來對齊代理行為，模擬真實世界的反應。</td>
+</tr>
+<tr>
+<td><strong>優點</strong></td>
+<td>靈活性強，可以根據需要分配任意配置。</td>
+<td>在處理大量代理時節省時間。</td>
+<td>基於真實數據生成代理行為，能夠反映現實情境，可信度高。</td>
+</tr>
+<tr>
+<td><strong>缺點</strong></td>
+<td>處理大量代理時，可能非常耗時且勞動密集。</td>
+<td>可能無法精確控制生成的配置。</td>
+<td>需要大量高質量的數據，且代理的靈活性受限於數據內容。</td>
+</tr>
+<tr>
+<td><strong>相關project</strong></td>
+<td>Generative Agent、MetaGPT、ChatDev、Self-collaboration 和 PTLLM</td>
+<td>RecAgent</td>
+<td>SocialSimulacra、GPT-3 和 Amercian National Election Studies (ANES)</td>
+</tr>
+</tbody></table>
+<p>示範代碼</p>
+<p><strong>Handcrafting Method</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> PromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain.llms <span class="keyword">import</span> OpenAI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定義手工設計的代理角色和行為</span></span><br><span class="line">template = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">你是一位非常有經驗的軟體開發顧問，你需要幫助一個新手開發者設計一個簡單的聊天機器人。請具體描述設計過程的步驟。</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">prompt = PromptTemplate(input_variables=[], template=template)</span><br><span class="line"></span><br><span class="line">llm = OpenAI(model=<span class="string">&quot;gpt-3.5-turbo&quot;</span>) <span class="comment"># 使用OpenAI作為LLM</span></span><br><span class="line">response = llm(prompt.<span class="built_in">format</span>())</span><br><span class="line"><span class="built_in">print</span>(response)</span><br></pre></td></tr></table></figure>
+
+<p><strong>LLM-generation Method</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> FewShotPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain.llms <span class="keyword">import</span> OpenAI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定義少量範例來生成更多代理角色</span></span><br><span class="line">examples = [</span><br><span class="line">    &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;軟體開發者&quot;</span>, <span class="string">&quot;behavior&quot;</span>: <span class="string">&quot;你需要為一個簡單的網站設計後端邏輯&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;數據科學家&quot;</span>, <span class="string">&quot;behavior&quot;</span>: <span class="string">&quot;你需要分析一個銷售數據集，並找出關鍵趨勢&quot;</span>&#125;</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定義 Few-shot Prompt</span></span><br><span class="line">example_formatter = <span class="keyword">lambda</span> example: <span class="string">f&quot;角色: <span class="subst">&#123;example[<span class="string">&#x27;role&#x27;</span>]&#125;</span>\n行為: <span class="subst">&#123;example[<span class="string">&#x27;behavior&#x27;</span>]&#125;</span>\n&quot;</span></span><br><span class="line">template = FewShotPromptTemplate(</span><br><span class="line">    examples=examples,</span><br><span class="line">    example_prompt=example_formatter,</span><br><span class="line">    prefix=<span class="string">&quot;這裡有兩個不同的角色例子，請生成一個新的角色並描述其行為。&quot;</span>,</span><br><span class="line">    input_variables=[<span class="string">&quot;role&quot;</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">llm = OpenAI(model=<span class="string">&quot;gpt-3.5-turbo&quot;</span>)</span><br><span class="line">new_role = <span class="string">&quot;系統管理員&quot;</span></span><br><span class="line">response = llm(template.<span class="built_in">format</span>(role=new_role))</span><br><span class="line"><span class="built_in">print</span>(response)</span><br></pre></td></tr></table></figure>
+
+<p><strong>Dataset Alignment Method</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> PromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain.chains <span class="keyword">import</span> LLMChain</span><br><span class="line"><span class="keyword">from</span> langchain.llms <span class="keyword">import</span> OpenAI</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 假設我們有一個數據集，包含不同年齡段的用戶及其喜歡的電影類型</span></span><br><span class="line">data = pd.DataFrame(&#123;</span><br><span class="line">    <span class="string">&quot;age_group&quot;</span>: [<span class="string">&quot;18-25&quot;</span>, <span class="string">&quot;26-35&quot;</span>, <span class="string">&quot;36-50&quot;</span>],</span><br><span class="line">    <span class="string">&quot;preferred_genre&quot;</span>: [<span class="string">&quot;動作片&quot;</span>, <span class="string">&quot;愛情片&quot;</span>, <span class="string">&quot;紀錄片&quot;</span>]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 根據年齡段生成代理行為</span></span><br><span class="line">template = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">根據用戶的年齡段 &#123;age_group&#125;，請推薦他們可能喜歡的電影類型：&#123;preferred_genre&#125;。</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">prompt = PromptTemplate(input_variables=[<span class="string">&quot;age_group&quot;</span>, <span class="string">&quot;preferred_genre&quot;</span>], template=template)</span><br><span class="line"></span><br><span class="line">llm = OpenAI(model=<span class="string">&quot;gpt-3.5-turbo&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> index, row <span class="keyword">in</span> data.iterrows():</span><br><span class="line">    chain = LLMChain(llm=llm, prompt=prompt)</span><br><span class="line">    response = chain.run(&#123;<span class="string">&quot;age_group&quot;</span>: row[<span class="string">&#x27;age_group&#x27;</span>], <span class="string">&quot;preferred_genre&quot;</span>: row[<span class="string">&#x27;preferred_genre&#x27;</span>]&#125;)</span><br><span class="line">    <span class="built_in">print</span>(response)</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="2-如何有效管理和調用代理的記憶與歷史數據？"><a href="#2-如何有效管理和調用代理的記憶與歷史數據？" class="headerlink" title="2. 如何有效管理和調用代理的記憶與歷史數據？"></a>2. 如何有效管理和調用代理的記憶與歷史數據？</h3><p> <img src="/images/20240902/planning.png" alt="image"></p>
+<h3 id="一、無反饋規劃-Planning-without-Feedback"><a href="#一、無反饋規劃-Planning-without-Feedback" class="headerlink" title="一、無反饋規劃 (Planning without Feedback)"></a>一、無反饋規劃 (Planning without Feedback)</h3><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>代表方法</th>
+<th>特點</th>
+<th>優點</th>
+<th>缺點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>單路徑推理</td>
+<td>Chain of Thought (CoT), Zero-shot-CoT, RePrompting, ReWOO, HuggingGPT</td>
+<td>將任務分解為幾個中間步驟，以級聯方式連接</td>
+<td>簡單直觀，易於實現；適合處理線性思維的任務</td>
+<td>缺乏靈活性，無法處理複雜任務；容易受到早期錯誤的影響</td>
+</tr>
+<tr>
+<td>多路徑推理</td>
+<td>Self-consistent CoT (CoT-SC), Tree of Thoughts (ToT), RecMind, Graph of Thoughts (GoT)</td>
+<td>步驟組織成樹狀結構，每個步驟可能有多個後續步驟</td>
+<td>更接近人類思維，能考慮多種可能性；適合複雜任務</td>
+<td>計算成本高，可能導致決策困難</td>
+</tr>
+<tr>
+<td>外部規劃器</td>
+<td>LLM+P, LLM-DP, CO-LLM</td>
+<td>利用外部規劃器生成計劃</td>
+<td>能利用高效規劃算法，適合特定領域的問題</td>
+<td>需要額外的轉換步驟，可能受限於外部規劃器的能力</td>
+</tr>
+</tbody></table>
+<h3 id="二、有反饋規劃-Planning-with-Feedback"><a href="#二、有反饋規劃-Planning-with-Feedback" class="headerlink" title="二、有反饋規劃 (Planning with Feedback)"></a>二、有反饋規劃 (Planning with Feedback)</h3><table>
+<thead>
+<tr>
+<th>反饋來源</th>
+<th>代表方法</th>
+<th>特點</th>
+<th>優點</th>
+<th>缺點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>環境反饋</td>
+<td>ReAct, Voyager, Ghost, SayPlan, DEPS, LLM-Planner, Inner Monologue</td>
+<td>從客觀世界或虛擬環境獲取反饋</td>
+<td>能適應動態變化的環境，更接近真實世界的解決方式</td>
+<td>需要設計環境模擬器，可能需要大量試錯過程</td>
+</tr>
+<tr>
+<td>人類反饋</td>
+<td>Inner Monologue</td>
+<td>直接與人類互動獲取反饋</td>
+<td>更好對齊人類價值觀，有助於緩解幻覺問題</td>
+<td>需要人類持續參與，成本高；可能受人類偏見影響</td>
+</tr>
+<tr>
+<td>模型反饋</td>
+<td>Self-refine, SelfCheck, InterAct, ChatCoT, Reflexion</td>
+<td>使用預訓練模型生成內部反饋</td>
+<td>不需外部資源，自主改進；提供詳細的語言反饋</td>
+<td>可能受模型局限性影響，難以引入新信息</td>
+</tr>
+</tbody></table>
+<h3 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h3><p>以目前開發架構，為了快速產生一個基礎架構，會先使用handcrafting method 搭配ReAct進行</p>
+<hr>
+<!-- <!-- Place this tag in your head or just before your close body tag. -->
+<!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
+<!-- <!-- Place this tag where you want the button to render. -->
+
+<!-- Please <a class="github-button" href="https://github.com/YenYuHsuan/hexo-theme-beantech" data-icon="octicon-star" aria-label="Star YenYuHsuan/hexo-theme-beantech on GitHub">Star</a> this Project if you like it! <a class="github-button" href="https://github.com/YenYuHsuan" aria-label="Follow @YenYuHsuan on GitHub">Follow</a> would also be appreciated!
+Peace! -->]]></content>
+      <tags>
+        <tag>paper</tag>
+        <tag>Agent</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Deep research 框架分析- Smolagents, LangGraph</title>
+    <url>/2025/03/05/20250305/</url>
+    <content><![CDATA[<!-- # Deep research 框架分析- Smolagents, LangGraph -->
+
+<h3 id="1-簡介"><a href="#1-簡介" class="headerlink" title="1. 簡介"></a>1. 簡介</h3><p><strong>深度研究代理 (Deep Research Agent)</strong> 是一種專門用於執行深度研究任務的人工智慧代理，能自動化處理包括研究計劃制定、資料收集、推理、總結、撰寫研究報告等複雜任務。目前，在開源社群中，<strong>LangGraph</strong> 和 <strong>SmolAgent</strong> 是兩個備受關注的深度研究代理框架。本文旨在對這兩個框架進行深入的比較分析，探討它們各自的優缺點以及更適合的應用場景。</p>
+<span id="more"></span>
+
+<p>本文使用的模型為 <code>gpt-4o-mini</code>。</p>
+<h3 id="2-LangGraph"><a href="#2-LangGraph" class="headerlink" title="2. LangGraph"></a>2. LangGraph</h3><p><strong>LangGraph</strong> 是由 LangChain 團隊開發的框架。其核心理念是將複雜的研究任務拆解為多個更小的子任務，並利用工具和代理逐步解決這些子任務。</p>
+<p><img src="/images/20250305/deep_research_agents_langgraph.png" alt="Agent組成"></p>
+<p><strong>實現邏輯：</strong></p>
+<ul>
+<li><strong>雙圖結構：</strong> LangGraph 的架構包含 <code>outer graph</code> (外層圖) 和 <code>sub-graph</code> (子圖) 兩層結構。<ul>
+<li><strong>Outer Graph：</strong> 負責制定整體研究計畫，並調用多個 <code>sub-graph</code> 來執行具體的子任務。最終，它會整合所有子圖的結果，形成最終的研究報告。</li>
+<li><strong>Sub-Graph：</strong> 專注於執行特定的子任務的檢索和整理檢索結果。<br>ㄏ</li>
+</ul>
+</li>
+<li><strong>執行步驟：</strong> (如上圖)</li>
+</ul>
+<p><strong>優點：</strong></p>
+<ul>
+<li><strong>非工具調用方式：</strong> LangGraph 將搜尋邏輯直接融入節點中，而非傳統的工具調用方式。這使得即使是不具備 Tool&#x2F;Function calling 功能的語言模型 (LLM)，例如 <code>deepseek-r1</code>，也能夠使用 LangGraph 框架。</li>
+<li><strong>清晰的報告輸出：</strong> LangGraph使用pydantic框架，能夠生成結構清晰的報告，其中包含表格和參考資料連結。</li>
+<li><strong>速度優勢：</strong> 透過 <code>Send()</code> 方法，LangGraph 能夠讓多個 <code>sub-graph</code> 平行處理各自的任務。跟smolagent相比，在相同的問題下，LangGraph 通常能在三分鐘內完成研究任務。</li>
+</ul>
+<p><strong>缺點：</strong></p>
+<ul>
+<li><strong>準確性不足：</strong> 由於每個 <code>sub-graph</code> 獨立處理各自的 session (平行處理)，導致最終結果未能準確聚焦於問題核心。</li>
+<li><strong>工具支援度有限：</strong> LangGraph 內建的工具主要集中在查詢和轉換字串格式，對於影像或不同格式檔案的處理能力較弱。</li>
+</ul>
+<h3 id="3-SmolAgent"><a href="#3-SmolAgent" class="headerlink" title="3. SmolAgent"></a>3. SmolAgent</h3><p><strong>SmolAgent</strong> 是由 Hugging Face 團隊開發的輕量級框架，更強調內容的準確性和可靠性。</p>
+<p><strong>實現邏輯：</strong></p>
+<ul>
+<li><strong>雙代理結構：</strong> SmolAgent 採用雙代理架構，類似autogen，包含一個主代理 (<code>manager_agent</code>) 和多個受管理的代理 (<code>managed_agent</code>)。<ul>
+<li><p><strong>Manager Agent (主代理)：</strong> 負責制定整個研究計畫，並將具體的執行任務分配給 <code>managed_agent</code>。</p>
+</li>
+<li><p><strong>Text Webbrowser Agent (受管理代理)：</strong> 負責執行主代理分配的子計畫。每個 <code>managed_agent</code> 執行子計畫的流程也遵循 “計畫 (plan) → 網路搜尋 (web search) → 檢視網頁 (view) → 更新計畫 (update plan)” 的循環。</p>
+<details>
+<summary><strong>SmolAgent執行流程詳解</strong></summary>
+
+<ol>
+<li><strong>主代理制定計畫</strong></li>
+</ol>
+<ul>
+<li>主代理創建研究計畫 </li>
+<li>將個別子計畫分配給 <code>managed_agent</code> 執行</li>
+<li>子計畫儲存在 <code>memory.steps.PlanningStep</code> 中</li>
+</ul>
+<ol start="2">
+<li><strong>受管理代理執行子計畫</strong></li>
+</ol>
+<ul>
+<li>執行流程：計畫 → 網路搜尋 → 檢視網頁 → 更新計畫</li>
+<li>當得到 <code>final_answer</code> 時：<ul>
+<li>處理最終答案</li>
+<li>將答案儲存到 <code>memory_step.action_output</code></li>
+<li>返回最終答案，表示任務完成</li>
+</ul>
+</li>
+<li>相關程式碼位於 <code>src/agents.py</code></li>
+</ul>
+<ol start="3">
+<li><strong>記憶體機制 (AgentMemory)</strong></li>
+</ol>
+<ul>
+<li>記錄所有執行過程：<ul>
+<li>任務步驟 (<code>TaskStep</code>)</li>
+<li>工具調用 (<code>ActionStep</code>)</li>
+<li>計畫 (<code>PlanningStep</code>)</li>
+</ul>
+</li>
+<li>每次處理邏輯前，使用 <code>write_memory_to_messages()</code> 將記憶轉換為模型輸入</li>
+<li>相關程式碼位於 <code>src/smolagents/memory.py</code></li>
+</ul>
+</details></li>
+</ul>
+</li>
+</ul>
+<p><strong>優點：</strong></p>
+<ul>
+<li><strong>準確性高：</strong> 透過 <code>AgentMemory</code> 類別，SmolAgent 在每次處理步驟時都會回顧先前的執行歷程，並將其整理到訊息中。這種記憶體機制使得 SmolAgent 能夠生成更準確和內容連貫的研究結果。</li>
+<li><strong>多格式支援：</strong> 支援圖片、影片及檔案等格式的處理，擴大了應用範圍。</li>
+</ul>
+<p><strong>缺點：</strong></p>
+<ul>
+<li><strong>速度較慢：</strong>  SmolAgent 的回覆速度可能較慢，通常需要 5 分鐘以上才能完成研究任務。ㄏ在 <code>managed_agent</code> 執行子計畫時，並未觀察到平行處理機制。</li>
+<li><strong>擴展性受限：</strong>  量級的設計可能限制了其在處理複雜任務時的擴展性。</li>
+</ul>
+<h3 id="4-比較分析"><a href="#4-比較分析" class="headerlink" title="4. 比較分析"></a>4. 比較分析</h3><p>為了更直觀地比較 LangGraph 和 SmolAgent 的性能，我們使用以下問題進行測試：</p>
+<ul>
+<li><p><strong>問題：</strong></p>
+<details>
+<summary>這篇文章講到的使用某個技術，可以降低延遲；請詳細說明技術的邏輯，並使用簡單的例子舉例說明</summary>
+
+<blockquote>
+<p>Initially, this agentic workflow incurred 5-9 seconds of latency, and having users wait that long for responses led to a bad experience. To address this, we came up with the following latency reduction technique. The system quickly generates a pre-response (short for preliminary response) that can be uttered quickly, which buys time for an agentic workflow to generate a more thoughtful, full response. (We’re grateful to LiveKit’s CEO Russ d’Sa and team for helping us get this working.) This is similar to how, if you were to ask me a complicated question, I might say “Hmm, let me think about that” or “Sure, I can help with that” — that’s the pre-response — while thinking about what my full response might be.</p>
+</blockquote>
+</details>
+</li>
+<li><p><strong>回覆結果：</strong></p>
+<ul>
+<li><p><strong>LangGraph：</strong> (<a href="https://docs.google.com/document/d/1dU2FLWi9V_3azSsd-Ejm6BFEZDwxqWcd0xtkUyWUvAg/edit?usp=sharing">連結</a>)</p>
+<ul>
+<li>LangGraph 的回覆涉及大量與「降低延遲」相關的技術，例如快取、負載均衡、CDN 等。然而，這些技術與 Pre-Response 技術的核心機制關聯性較弱，顯示其未能準確聚焦於問題的核心。</li>
+</ul>
+</li>
+<li><p><strong>SmolAgent：</strong> (<a href="https://docs.google.com/document/d/1UUH3fjmycCGmMxX8kaiKkrv7qS6-IBT01C6WfRXQWhk/edit?usp=sharing">連結</a>)</p>
+<ul>
+<li>SmolAgent 的回覆明確解釋了「Pre-Response 技術」的邏輯，與原始文章的描述高度一致。</li>
+<li>SmolAgent 詳細說明了該技術的運作方式，包括即時回應、背景處理以及最終回應的流程。</li>
+<li>SmolAgent 給出了簡單且貼切的例子來說明 Pre-Response 技術，例如以 “Hmm, let me think about that” 作為預先回應。</li>
+<li>SmolAgent 的回覆內容緊扣主題，沒有擴展到與 Pre-Response 技術無關的內容。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">LangGraph</th>
+<th align="left">SmolAgent</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>速度</strong></td>
+<td align="left">快</td>
+<td align="left">慢</td>
+</tr>
+<tr>
+<td align="left"><strong>準確性</strong></td>
+<td align="left">低</td>
+<td align="left">高<sup>1</sup></td>
+</tr>
+<tr>
+<td align="left"><strong>開源模型支持</strong></td>
+<td align="left">高<sup>2</sup></td>
+<td align="left">中<sup>3</sup></td>
+</tr>
+</tbody></table>
+<details>
+<summary><strong>表格備註</strong></summary>
+
+<ol>
+<li><strong>準確性評估：</strong> SmolAgent 還使用了 GAIA Benchmark 進行評分。評分方法可參考 <code>run.gaia.py</code>，該腳本使用多線程執行 GAIA dataset 中的問題，將結果儲存為 JSON 檔案後，再使用 <code>analysis.ipynb</code> 進行評分分析。</li>
+<li><strong>開源模型支持 (LangGraph)：</strong> LangGraph 支持大部分開源模型。在測試中，其 planning 階段使用了 <code>deepseek-r1-distill-llama-70b</code> 模型，writing 階段使用了 <code>llama-3.3-70b-versatile</code> 模型。</li>
+<li><strong>開源模型支持 (SmolAgent)：</strong> SmolAgent  目前主要支援具備 Tool&#x2F;Function calling 功能的模型。在測試中，使用 <code>Qwen/Qwen2.5-Coder-32B-Instruct</code> 模型執行時，SmolAgent 一直未能得到 <code>final_answer</code>。</li>
+</ol>
+</details>
+
+<h3 id="5-結論："><a href="#5-結論：" class="headerlink" title="5. 結論："></a>5. 結論：</h3><pre><code>•	LangGraph 適合處理快速回應的研究任務，尤其在對時間要求較高的情境下，具有優勢。然而，其準確性和工具支援仍有待提升。
+•	SmolAgent 在準確性方面表現出色，尤其適合需要高準確度的複雜研究任務，但其速度較慢且擴展性有限。
+</code></pre>
+<h3 id="6-TODO"><a href="#6-TODO" class="headerlink" title="6. TODO"></a>6. TODO</h3><p>LangGraph 可以透過以下方式進一步優化：</p>
+<ul>
+<li><strong>改進 Prompt (提示詞)：</strong> 設計更明確且更具引導性的 Prompt，以引導 LangGraph 進行更深入的推理，提升其準確性。</li>
+<li><strong>增加工具：</strong> 整合更豐富的工具，例如 Web Search 工具，使 LangGraph 能夠更有效地動態查詢和獲取外部資料，以應對更複雜的研究任務。</li>
+</ul>
+<h2 id="附錄"><a href="#附錄" class="headerlink" title="附錄"></a>附錄</h2><h3 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h3><ul>
+<li><a href="https://github.com/langchain-ai/open_deep_research">LangGraph</a></li>
+<li><a href="https://github.com/huggingface/smolagents/tree/gaia-submission-r1/examples/open_deep_research">SmolAgent</a></li>
+<li><a href="https://www.cnblogs.com/huggingface/p/18291426">GAIA benchmark</a></li>
+</ul>
+<hr>
+<!-- Place this tag in your head or just before your close body tag. -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+<!-- Place this tag where you want the button to render. -->
+
+<p>Please <a class="github-button" href="https://github.com/wu0up/deep_research_study" data-icon="octicon-star" aria-label="Star wu0up/deep_research_study on GitHub">Star</a> this Project if you like it! <a class="github-button" href="https://github.com/wu0up" aria-label="Follow @wu0up on GitHub">Follow</a> would also be appreciated!<br>Peace!</p>
+]]></content>
+      <tags>
+        <tag>Agent</tag>
+        <tag>framework</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>[course]build apps with windsurfs ai coding agents</title>
+    <url>/2025/03/18/20250318/</url>
+    <content><![CDATA[<!-- # [course]解析 Windsurf AI Coding Agents：從傳統 Agent 到 Cascade Agent -->
+
+<blockquote>
+<p><strong>學習目標</strong>：簡單了解 AI Coding Agent 與開發者的互動模式及其資料處理機制，以評估將此技術整合至現有 Agent 框架的可行性。本課程筆記整理自 DeepLearning.AI 的 Windsurf AI Coding Agents 系列課程。</p>
+</blockquote>
+<p><strong>關鍵重點：</strong></p>
+<ul>
+<li>Windsurf AI Coding Agents 與人類開發者的協作模式-flow</li>
+<li>rag上的優化</li>
+<li>技術可行性評估</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="1-flow-Windsurf-AI-Coding-Agents-與人類開發者的協作模式"><a href="#1-flow-Windsurf-AI-Coding-Agents-與人類開發者的協作模式" class="headerlink" title="1. flow: Windsurf AI Coding Agents 與人類開發者的協作模式"></a>1. flow: Windsurf AI Coding Agents 與人類開發者的協作模式</h2><p>跟傳統的agent不同, 不是等到使用者呼叫, 才根據使用者提供的資料或是當下的檔案進行回覆; windsurf的agent強調flow, 在使用者使用的過程, 會不斷紀錄動作; 回覆問題的依據是動作的flow及完整的repo</p>
+<p><img src="/images/20250318/flow_agent.png" alt="flow agent, 可以更smooth跟user互動"></p>
+<h2 id="2-Windsurf-Agent-Cascade-Agent-特色"><a href="#2-Windsurf-Agent-Cascade-Agent-特色" class="headerlink" title="2. Windsurf Agent - Cascade Agent 特色"></a>2. Windsurf Agent - Cascade Agent 特色</h2><p>傳統 Agent 依賴 <strong>LLM + 工具調用</strong>，而 Cascade Agent 則近一步結合：</p>
+<ul>
+<li><p><strong>上下文感知（Context Awareness）</strong></p>
+</li>
+<li><p><strong>人類行為追蹤（Human Action Tracking）：</strong> 了解人類的動作，讓我們能深入理解用戶的行為，並允許我們在不干擾用戶體驗的情況下，保持與用戶的互動。</p>
+</li>
+<li><p><strong>工具（tools）：</strong> 包含<strong>search &amp; discovery</strong>, change state, verification<br><img src="/images/20250318/tool_categories.png" alt="tool categories"></p>
+</li>
+<li><p>三者組成flow, 根據行為決定何時調用工具<br><img src="/images/20250318/flow_state.png" alt="flow agent, 可以更smooth跟user互動"></p>
+</li>
+<li><p>下圖比較不同版本, 使用的技術和接受度<br><strong>模型幾乎一樣，差別在input for llm</strong><br><img src="/images/20250318/evaluation_for_agent.png" alt="windsurf agent的演進"></p>
+</li>
+</ul>
+<details>
+<summary>圖片詳細解析</summary>
+
+<h3 id="主要內容解析"><a href="#主要內容解析" class="headerlink" title="主要內容解析"></a>主要內容解析</h3><h4 id="版本演進與提升"><a href="#版本演進與提升" class="headerlink" title="版本演進與提升"></a>版本演進與提升</h4><ul>
+<li><strong>Baseline（基線）</strong>：僅使用當前文件作為上下文。</li>
+<li><strong>V1</strong>：增加對**開啟的文件&#x2F;標籤（tabs）**的上下文支持，使補全更準確。</li>
+<li><strong>V2</strong>：在 V1 的基礎上，增加了本地程式碼庫（repo）感知能力，提升對專案範圍內的理解。</li>
+<li><strong>V3</strong>：不僅考慮開啟的文件&#x2F;標籤，還引入了軌跡感知（Trajectory awareness），並擴展到多個程式碼庫（multi-repo）與遠端程式庫（remote repo）感知（RBAC），進一步增強補全效果。</li>
+</ul>
+<h4 id="解析與檢索技術"><a href="#解析與檢索技術" class="headerlink" title="解析與檢索技術"></a>解析與檢索技術</h4><ul>
+<li><strong>Baseline</strong>：無特殊檢索機制，僅基於當前文件。</li>
+<li><strong>V1 &amp; V2（基礎 RAG）</strong>：<ul>
+<li>簡單分塊（Naive chunking）</li>
+<li>基於嵌入的檢索（K-Nearest Neighbors, KNN）</li>
+</ul>
+</li>
+<li><strong>V3（智能 RAG）</strong>：<ul>
+<li>自訂程式碼解析器（Custom code parsers）</li>
+<li>更智能的程式碼切分方式</li>
+<li>多重啟發式檢索（Multi-heuristic retrieval）</li>
+<li>重排序（Reranking）</li>
+</ul>
+</li>
+</ul>
+<h4 id="結果提升"><a href="#結果提升" class="headerlink" title="結果提升"></a>結果提升</h4><ul>
+<li>V1：11% 更多程式碼被接受</li>
+<li>V2：8% 更多程式碼被接受（相較於 V1）</li>
+<li>V3：38% 更多程式碼被接受（與基線相比）</li>
+</ul>
+<blockquote>
+<p>紅色標註「Wow」與箭頭強調 V3 版本的顯著改進。</p>
+</blockquote>
+</details>
+
+<h2 id="3-Context-Awareness-檢索技術創新"><a href="#3-Context-Awareness-檢索技術創新" class="headerlink" title="3. Context Awareness-檢索技術創新"></a>3. Context Awareness-檢索技術創新</h2><p>主要針對tool中的類別-search &amp; discovery進行說明;</p>
+<h3 id="重點"><a href="#重點" class="headerlink" title="重點"></a>重點</h3><ol>
+<li><strong>多次檢索，非一次性查詢</strong>: 可以不要一次就搜尋到，或是可以不用搜尋非常perfect; 使用多次搜尋</li>
+<li><strong>混合檢索方式</strong>: 針對不同的task, 使用不同的retriever，有3種retriever</li>
+<li><strong>結合 LLM 重新排序（Reranking）</strong>，取代單純依賴 Embedding, 針對相似snippet code進行reranking</li>
+<li>提供global_rule.md, 讓user進行一些微調（如限定 Python 版本）</li>
+</ol>
+<p><img src="/images/20250318/new_retriever.png" alt="使用llm進行reranking"></p>
+<p><img src="/images/20250318/search_problem.png" alt="說明針對不同的問題, 對應使用的retriever"></p>
+<details>
+<summary>搜尋類別詳細說明</summary>
+
+<h3 id="1-Category-1：明確知道搜尋目標，並有固定檢索規則"><a href="#1-Category-1：明確知道搜尋目標，並有固定檢索規則" class="headerlink" title="1. Category 1：明確知道搜尋目標，並有固定檢索規則"></a>1. Category 1：明確知道搜尋目標，並有固定檢索規則</h3><p><strong>特徵：</strong></p>
+<ul>
+<li>使用者完全清楚自己要找的資訊</li>
+<li>有一套明確的檢索規則可用於搜尋</li>
+</ul>
+<p><strong>範例需求：</strong></p>
+<blockquote>
+<p>「我想找到 ContactForm 物件的所有調用點（call sites）」</p>
+</blockquote>
+<p><strong>適用技術：</strong></p>
+<ul>
+<li>grep（文字匹配搜尋）</li>
+<li>listdir（列出目錄中的文件）</li>
+</ul>
+<blockquote>
+<p>這類搜尋適合直接匹配字詞或結構化查詢，例如在程式碼庫中尋找某個函數的所有用法。</p>
+</blockquote>
+<h3 id="2-Category-2：知道要找的內容，但需要決定檢索方式"><a href="#2-Category-2：知道要找的內容，但需要決定檢索方式" class="headerlink" title="2. Category 2：知道要找的內容，但需要決定檢索方式"></a>2. Category 2：知道要找的內容，但需要決定檢索方式</h3><p><strong>特徵：</strong></p>
+<ul>
+<li>使用者知道自己要找什麼，但不確定應該用什麼方法或關鍵字來檢索</li>
+<li>需要嘗試不同的檢索策略來獲取正確結果</li>
+</ul>
+<p><strong>範例需求：</strong></p>
+<blockquote>
+<p>「我想找到一個公開的聯絡表單（contact form）程式碼範例」</p>
+</blockquote>
+<p><strong>適用技術：</strong></p>
+<ul>
+<li>web search（網頁搜尋）</li>
+<li>MCP（可能指的是某種模型或方法，例如 Multi-Context Processing）</li>
+</ul>
+<blockquote>
+<p>這類搜尋適合開放網路資訊搜尋，例如在 Google 上查詢公開的程式碼範例。</p>
+</blockquote>
+<h3 id="3-Category-3：不確定具體需求，只想獲取相關資訊"><a href="#3-Category-3：不確定具體需求，只想獲取相關資訊" class="headerlink" title="3. Category 3：不確定具體需求，只想獲取相關資訊"></a>3. Category 3：不確定具體需求，只想獲取相關資訊</h3><p><strong>特徵：</strong></p>
+<ul>
+<li>使用者不確定具體要找什麼資訊，只知道一個大致的需求</li>
+<li>需要系統自動檢索所有可能相關的資訊</li>
+</ul>
+<p><strong>範例需求：</strong></p>
+<blockquote>
+<p>「我想獲得所有與建立 ContactForm 物件相關的資訊」</p>
+</blockquote>
+<p><strong>適用技術：</strong></p>
+<ul>
+<li>embedding search（向量嵌入式搜尋）</li>
+</ul>
+<blockquote>
+<p>這類搜尋適合使用語義搜尋（Semantic Search）或基於嵌入的檢索技術（例如 RAG 技術），讓 AI 透過相似度匹配相關內容。</p>
+</blockquote>
+</details>
+
+<h2 id="4-實際demo"><a href="#4-實際demo" class="headerlink" title="4. 實際demo"></a>4. 實際demo</h2><p><img src="/images/20250318/demo_process3.png" alt="使用工具進行檢索"><br><img src="/images/20250318/demo_config.png" alt="可以提供wildframe的圖給casecade"><br><img src="/images/20250318/demo_proecess.png" alt="將結果另存成一個text file(ex. spring.io)"></p>
+<h2 id="附錄"><a href="#附錄" class="headerlink" title="附錄"></a>附錄</h2><ul>
+<li><a href="https://learn.deeplearning.ai/courses/build-apps-with-windsurfs-ai-coding-agents/lesson/ym8if/introduction?courseName=build-apps-with-windsurfs-ai-coding-agents">build apps with windsurfs ai coding agents</a></li>
+</ul>
+<hr>
+<!-- Place this tag in your head or just before your close body tag. -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+<!-- Place this tag where you want the button to render. -->
+
+<!-- Please <a class="github-button" href="https://github.com/wu0up/deep_research_study" data-icon="octicon-star" aria-label="Star wu0up/deep_research_study on GitHub">Star</a> this Project if you like it! -->
+<p><a class="github-button" href="https://github.com/wu0up" aria-label="Follow @wu0up on GitHub">Follow</a> would also be appreciated!<br>Peace!</p>
+]]></content>
+      <tags>
+        <tag>Agent</tag>
+        <tag>coding</tag>
+        <tag>course</tag>
+      </tags>
+  </entry>
+</search>
