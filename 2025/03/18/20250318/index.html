@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wu0up.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="學習目標：簡單了解 AI Coding Agent 與開發者的互動模式及其資料處理機制，以評估將此技術整合至現有 Agent 框架的可行性。本課程筆記整理自 DeepLearning.AI 的 Windsurf AI Coding Agents 系列課程。  關鍵重點：  Windsurf AI Coding Agents 與人類開發者的協作模式-flow rag上的優化 技術可行性評估">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[course]build apps with windsurfs ai coding agents">
+<meta property="og:url" content="https://wu0up.github.io/2025/03/18/20250318/index.html">
+<meta property="og:site_name" content="$ [ % ^ &amp; *">
+<meta property="og:description" content="學習目標：簡單了解 AI Coding Agent 與開發者的互動模式及其資料處理機制，以評估將此技術整合至現有 Agent 框架的可行性。本課程筆記整理自 DeepLearning.AI 的 Windsurf AI Coding Agents 系列課程。  關鍵重點：  Windsurf AI Coding Agents 與人類開發者的協作模式-flow rag上的優化 技術可行性評估">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wu0up.github.io/images/20250318/flow_agent.png">
+<meta property="og:image" content="https://wu0up.github.io/images/20250318/tool_categories.png">
+<meta property="og:image" content="https://wu0up.github.io/images/20250318/flow_state.png">
+<meta property="og:image" content="https://wu0up.github.io/images/20250318/evaluation_for_agent.png">
+<meta property="og:image" content="https://wu0up.github.io/images/20250318/new_retriever.png">
+<meta property="og:image" content="https://wu0up.github.io/images/20250318/search_problem.png">
+<meta property="og:image" content="https://wu0up.github.io/images/20250318/demo_process3.png">
+<meta property="og:image" content="https://wu0up.github.io/images/20250318/demo_config.png">
+<meta property="og:image" content="https://wu0up.github.io/images/20250318/demo_proecess.png">
+<meta property="article:published_time" content="2025-03-18T02:51:24.000Z">
+<meta property="article:modified_time" content="2025-03-20T06:22:39.417Z">
+<meta property="article:author" content="Vivian Ou">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="coding">
+<meta property="article:tag" content="course">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wu0up.github.io/images/20250318/flow_agent.png">
+
+<link rel="canonical" href="https://wu0up.github.io/2025/03/18/20250318/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>[course]build apps with windsurfs ai coding agents | $ [ % ^ & *</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">$ [ % ^ & *</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Take note for something relate to LLM</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://wu0up.github.io/2025/03/18/20250318/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Vivian Ou">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="$ [ % ^ & *">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [course]build apps with windsurfs ai coding agents
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2025-03-18 10:51:24" itemprop="dateCreated datePublished" datetime="2025-03-18T10:51:24+08:00">2025-03-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-20 14:22:39" itemprop="dateModified" datetime="2025-03-20T14:22:39+08:00">2025-03-20</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!-- # [course]解析 Windsurf AI Coding Agents：從傳統 Agent 到 Cascade Agent -->
+
+<blockquote>
+<p><strong>學習目標</strong>：簡單了解 AI Coding Agent 與開發者的互動模式及其資料處理機制，以評估將此技術整合至現有 Agent 框架的可行性。本課程筆記整理自 DeepLearning.AI 的 Windsurf AI Coding Agents 系列課程。</p>
+</blockquote>
+<p><strong>關鍵重點：</strong></p>
+<ul>
+<li>Windsurf AI Coding Agents 與人類開發者的協作模式-flow</li>
+<li>rag上的優化</li>
+<li>技術可行性評估</li>
+</ul>
+<span id="more"></span>
+
+<h2 id="1-flow-Windsurf-AI-Coding-Agents-與人類開發者的協作模式"><a href="#1-flow-Windsurf-AI-Coding-Agents-與人類開發者的協作模式" class="headerlink" title="1. flow: Windsurf AI Coding Agents 與人類開發者的協作模式"></a>1. flow: Windsurf AI Coding Agents 與人類開發者的協作模式</h2><p>跟傳統的agent不同, 不是等到使用者呼叫, 才根據使用者提供的資料或是當下的檔案進行回覆; windsurf的agent強調flow, 在使用者使用的過程, 會不斷紀錄動作; 回覆問題的依據是動作的flow及完整的repo</p>
+<p><img src="/images/20250318/flow_agent.png" alt="flow agent, 可以更smooth跟user互動"></p>
+<h2 id="2-Windsurf-Agent-Cascade-Agent-特色"><a href="#2-Windsurf-Agent-Cascade-Agent-特色" class="headerlink" title="2. Windsurf Agent - Cascade Agent 特色"></a>2. Windsurf Agent - Cascade Agent 特色</h2><p>傳統 Agent 依賴 <strong>LLM + 工具調用</strong>，而 Cascade Agent 則近一步結合：</p>
+<ul>
+<li><p><strong>上下文感知（Context Awareness）</strong></p>
+</li>
+<li><p><strong>人類行為追蹤（Human Action Tracking）：</strong> 了解人類的動作，讓我們能深入理解用戶的行為，並允許我們在不干擾用戶體驗的情況下，保持與用戶的互動。</p>
+</li>
+<li><p><strong>工具（tools）：</strong> 包含<strong>search &amp; discovery</strong>, change state, verification<br><img src="/images/20250318/tool_categories.png" alt="tool categories"></p>
+</li>
+<li><p>三者組成flow, 根據行為決定何時調用工具<br><img src="/images/20250318/flow_state.png" alt="flow agent, 可以更smooth跟user互動"></p>
+</li>
+<li><p>下圖比較不同版本, 使用的技術和接受度<br><strong>模型幾乎一樣，差別在input for llm</strong><br><img src="/images/20250318/evaluation_for_agent.png" alt="windsurf agent的演進"></p>
+</li>
+</ul>
+<details>
+<summary>圖片詳細解析</summary>
+
+<h3 id="主要內容解析"><a href="#主要內容解析" class="headerlink" title="主要內容解析"></a>主要內容解析</h3><h4 id="版本演進與提升"><a href="#版本演進與提升" class="headerlink" title="版本演進與提升"></a>版本演進與提升</h4><ul>
+<li><strong>Baseline（基線）</strong>：僅使用當前文件作為上下文。</li>
+<li><strong>V1</strong>：增加對**開啟的文件&#x2F;標籤（tabs）**的上下文支持，使補全更準確。</li>
+<li><strong>V2</strong>：在 V1 的基礎上，增加了本地程式碼庫（repo）感知能力，提升對專案範圍內的理解。</li>
+<li><strong>V3</strong>：不僅考慮開啟的文件&#x2F;標籤，還引入了軌跡感知（Trajectory awareness），並擴展到多個程式碼庫（multi-repo）與遠端程式庫（remote repo）感知（RBAC），進一步增強補全效果。</li>
+</ul>
+<h4 id="解析與檢索技術"><a href="#解析與檢索技術" class="headerlink" title="解析與檢索技術"></a>解析與檢索技術</h4><ul>
+<li><strong>Baseline</strong>：無特殊檢索機制，僅基於當前文件。</li>
+<li><strong>V1 &amp; V2（基礎 RAG）</strong>：<ul>
+<li>簡單分塊（Naive chunking）</li>
+<li>基於嵌入的檢索（K-Nearest Neighbors, KNN）</li>
+</ul>
+</li>
+<li><strong>V3（智能 RAG）</strong>：<ul>
+<li>自訂程式碼解析器（Custom code parsers）</li>
+<li>更智能的程式碼切分方式</li>
+<li>多重啟發式檢索（Multi-heuristic retrieval）</li>
+<li>重排序（Reranking）</li>
+</ul>
+</li>
+</ul>
+<h4 id="結果提升"><a href="#結果提升" class="headerlink" title="結果提升"></a>結果提升</h4><ul>
+<li>V1：11% 更多程式碼被接受</li>
+<li>V2：8% 更多程式碼被接受（相較於 V1）</li>
+<li>V3：38% 更多程式碼被接受（與基線相比）</li>
+</ul>
+<blockquote>
+<p>紅色標註「Wow」與箭頭強調 V3 版本的顯著改進。</p>
+</blockquote>
+</details>
+
+<h2 id="3-Context-Awareness-檢索技術創新"><a href="#3-Context-Awareness-檢索技術創新" class="headerlink" title="3. Context Awareness-檢索技術創新"></a>3. Context Awareness-檢索技術創新</h2><p>主要針對tool中的類別-search &amp; discovery進行說明;</p>
+<h3 id="重點"><a href="#重點" class="headerlink" title="重點"></a>重點</h3><ol>
+<li><strong>多次檢索，非一次性查詢</strong>: 可以不要一次就搜尋到，或是可以不用搜尋非常perfect; 使用多次搜尋</li>
+<li><strong>混合檢索方式</strong>: 針對不同的task, 使用不同的retriever，有3種retriever</li>
+<li><strong>結合 LLM 重新排序（Reranking）</strong>，取代單純依賴 Embedding, 針對相似snippet code進行reranking</li>
+<li>提供global_rule.md, 讓user進行一些微調（如限定 Python 版本）</li>
+</ol>
+<p><img src="/images/20250318/new_retriever.png" alt="使用llm進行reranking"></p>
+<p><img src="/images/20250318/search_problem.png" alt="說明針對不同的問題, 對應使用的retriever"></p>
+<details>
+<summary>搜尋類別詳細說明</summary>
+
+<h3 id="1-Category-1：明確知道搜尋目標，並有固定檢索規則"><a href="#1-Category-1：明確知道搜尋目標，並有固定檢索規則" class="headerlink" title="1. Category 1：明確知道搜尋目標，並有固定檢索規則"></a>1. Category 1：明確知道搜尋目標，並有固定檢索規則</h3><p><strong>特徵：</strong></p>
+<ul>
+<li>使用者完全清楚自己要找的資訊</li>
+<li>有一套明確的檢索規則可用於搜尋</li>
+</ul>
+<p><strong>範例需求：</strong></p>
+<blockquote>
+<p>「我想找到 ContactForm 物件的所有調用點（call sites）」</p>
+</blockquote>
+<p><strong>適用技術：</strong></p>
+<ul>
+<li>grep（文字匹配搜尋）</li>
+<li>listdir（列出目錄中的文件）</li>
+</ul>
+<blockquote>
+<p>這類搜尋適合直接匹配字詞或結構化查詢，例如在程式碼庫中尋找某個函數的所有用法。</p>
+</blockquote>
+<h3 id="2-Category-2：知道要找的內容，但需要決定檢索方式"><a href="#2-Category-2：知道要找的內容，但需要決定檢索方式" class="headerlink" title="2. Category 2：知道要找的內容，但需要決定檢索方式"></a>2. Category 2：知道要找的內容，但需要決定檢索方式</h3><p><strong>特徵：</strong></p>
+<ul>
+<li>使用者知道自己要找什麼，但不確定應該用什麼方法或關鍵字來檢索</li>
+<li>需要嘗試不同的檢索策略來獲取正確結果</li>
+</ul>
+<p><strong>範例需求：</strong></p>
+<blockquote>
+<p>「我想找到一個公開的聯絡表單（contact form）程式碼範例」</p>
+</blockquote>
+<p><strong>適用技術：</strong></p>
+<ul>
+<li>web search（網頁搜尋）</li>
+<li>MCP（可能指的是某種模型或方法，例如 Multi-Context Processing）</li>
+</ul>
+<blockquote>
+<p>這類搜尋適合開放網路資訊搜尋，例如在 Google 上查詢公開的程式碼範例。</p>
+</blockquote>
+<h3 id="3-Category-3：不確定具體需求，只想獲取相關資訊"><a href="#3-Category-3：不確定具體需求，只想獲取相關資訊" class="headerlink" title="3. Category 3：不確定具體需求，只想獲取相關資訊"></a>3. Category 3：不確定具體需求，只想獲取相關資訊</h3><p><strong>特徵：</strong></p>
+<ul>
+<li>使用者不確定具體要找什麼資訊，只知道一個大致的需求</li>
+<li>需要系統自動檢索所有可能相關的資訊</li>
+</ul>
+<p><strong>範例需求：</strong></p>
+<blockquote>
+<p>「我想獲得所有與建立 ContactForm 物件相關的資訊」</p>
+</blockquote>
+<p><strong>適用技術：</strong></p>
+<ul>
+<li>embedding search（向量嵌入式搜尋）</li>
+</ul>
+<blockquote>
+<p>這類搜尋適合使用語義搜尋（Semantic Search）或基於嵌入的檢索技術（例如 RAG 技術），讓 AI 透過相似度匹配相關內容。</p>
+</blockquote>
+</details>
+
+<h2 id="4-實際demo"><a href="#4-實際demo" class="headerlink" title="4. 實際demo"></a>4. 實際demo</h2><p><img src="/images/20250318/demo_process3.png" alt="使用工具進行檢索"><br><img src="/images/20250318/demo_config.png" alt="可以提供wildframe的圖給casecade"><br><img src="/images/20250318/demo_proecess.png" alt="將結果另存成一個text file(ex. spring.io)"></p>
+<h2 id="附錄"><a href="#附錄" class="headerlink" title="附錄"></a>附錄</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://learn.deeplearning.ai/courses/build-apps-with-windsurfs-ai-coding-agents/lesson/ym8if/introduction?courseName=build-apps-with-windsurfs-ai-coding-agents">build apps with windsurfs ai coding agents</a></li>
+</ul>
+<hr>
+<!-- Place this tag in your head or just before your close body tag. -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+<!-- Place this tag where you want the button to render. -->
+
+<!-- Please <a class="github-button" target="_blank" rel="noopener" href="https://github.com/wu0up/deep_research_study" data-icon="octicon-star" aria-label="Star wu0up/deep_research_study on GitHub">Star</a> this Project if you like it! -->
+<p><a class="github-button" target="_blank" rel="noopener" href="https://github.com/wu0up" aria-label="Follow @wu0up on GitHub">Follow</a> would also be appreciated!<br>Peace!</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/coding/" rel="tag"># coding</a>
+              <a href="/tags/course/" rel="tag"># course</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/03/05/20250305/" rel="prev" title="Deep research 框架分析- Smolagents, LangGraph">
+      <i class="fa fa-chevron-left"></i> Deep research 框架分析- Smolagents, LangGraph
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-flow-Windsurf-AI-Coding-Agents-%E8%88%87%E4%BA%BA%E9%A1%9E%E9%96%8B%E7%99%BC%E8%80%85%E7%9A%84%E5%8D%94%E4%BD%9C%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">1. flow: Windsurf AI Coding Agents 與人類開發者的協作模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Windsurf-Agent-Cascade-Agent-%E7%89%B9%E8%89%B2"><span class="nav-number">2.</span> <span class="nav-text">2. Windsurf Agent - Cascade Agent 特色</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E5%85%A7%E5%AE%B9%E8%A7%A3%E6%9E%90"><span class="nav-number">2.1.</span> <span class="nav-text">主要內容解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%89%88%E6%9C%AC%E6%BC%94%E9%80%B2%E8%88%87%E6%8F%90%E5%8D%87"><span class="nav-number">2.1.1.</span> <span class="nav-text">版本演進與提升</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90%E8%88%87%E6%AA%A2%E7%B4%A2%E6%8A%80%E8%A1%93"><span class="nav-number">2.1.2.</span> <span class="nav-text">解析與檢索技術</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B5%90%E6%9E%9C%E6%8F%90%E5%8D%87"><span class="nav-number">2.1.3.</span> <span class="nav-text">結果提升</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Context-Awareness-%E6%AA%A2%E7%B4%A2%E6%8A%80%E8%A1%93%E5%89%B5%E6%96%B0"><span class="nav-number">3.</span> <span class="nav-text">3. Context Awareness-檢索技術創新</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E9%BB%9E"><span class="nav-number">3.1.</span> <span class="nav-text">重點</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Category-1%EF%BC%9A%E6%98%8E%E7%A2%BA%E7%9F%A5%E9%81%93%E6%90%9C%E5%B0%8B%E7%9B%AE%E6%A8%99%EF%BC%8C%E4%B8%A6%E6%9C%89%E5%9B%BA%E5%AE%9A%E6%AA%A2%E7%B4%A2%E8%A6%8F%E5%89%87"><span class="nav-number">3.2.</span> <span class="nav-text">1. Category 1：明確知道搜尋目標，並有固定檢索規則</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Category-2%EF%BC%9A%E7%9F%A5%E9%81%93%E8%A6%81%E6%89%BE%E7%9A%84%E5%85%A7%E5%AE%B9%EF%BC%8C%E4%BD%86%E9%9C%80%E8%A6%81%E6%B1%BA%E5%AE%9A%E6%AA%A2%E7%B4%A2%E6%96%B9%E5%BC%8F"><span class="nav-number">3.3.</span> <span class="nav-text">2. Category 2：知道要找的內容，但需要決定檢索方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Category-3%EF%BC%9A%E4%B8%8D%E7%A2%BA%E5%AE%9A%E5%85%B7%E9%AB%94%E9%9C%80%E6%B1%82%EF%BC%8C%E5%8F%AA%E6%83%B3%E7%8D%B2%E5%8F%96%E7%9B%B8%E9%97%9C%E8%B3%87%E8%A8%8A"><span class="nav-number">3.4.</span> <span class="nav-text">3. Category 3：不確定具體需求，只想獲取相關資訊</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%AF%A6%E9%9A%9Bdemo"><span class="nav-number">4.</span> <span class="nav-text">4. 實際demo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%84%E9%8C%84"><span class="nav-number">5.</span> <span class="nav-text">附錄</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Vivian Ou</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Vivian Ou</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

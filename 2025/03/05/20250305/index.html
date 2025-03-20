@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"wu0up.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="1. 簡介深度研究代理 (Deep Research Agent) 是一種專門用於執行深度研究任務的人工智慧代理，能自動化處理包括研究計劃制定、資料收集、推理、總結、撰寫研究報告等複雜任務。目前，在開源社群中，LangGraph 和 SmolAgent 是兩個備受關注的深度研究代理框架。本文旨在對這兩個框架進行深入的比較分析，探討它們各自的優缺點以及更適合的應用場景。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Deep research 框架分析- Smolagents, LangGraph">
+<meta property="og:url" content="https://wu0up.github.io/2025/03/05/20250305/index.html">
+<meta property="og:site_name" content="$ [ % ^ &amp; *">
+<meta property="og:description" content="1. 簡介深度研究代理 (Deep Research Agent) 是一種專門用於執行深度研究任務的人工智慧代理，能自動化處理包括研究計劃制定、資料收集、推理、總結、撰寫研究報告等複雜任務。目前，在開源社群中，LangGraph 和 SmolAgent 是兩個備受關注的深度研究代理框架。本文旨在對這兩個框架進行深入的比較分析，探討它們各自的優缺點以及更適合的應用場景。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wu0up.github.io/images/20250305/deep_research_agents_langgraph.png">
+<meta property="article:published_time" content="2025-03-05T02:51:24.000Z">
+<meta property="article:modified_time" content="2025-03-20T03:20:59.881Z">
+<meta property="article:author" content="Vivian Ou">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="framework">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wu0up.github.io/images/20250305/deep_research_agents_langgraph.png">
+
+<link rel="canonical" href="https://wu0up.github.io/2025/03/05/20250305/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Deep research 框架分析- Smolagents, LangGraph | $ [ % ^ & *</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">$ [ % ^ & *</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Take note for something relate to LLM</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://wu0up.github.io/2025/03/05/20250305/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Vivian Ou">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="$ [ % ^ & *">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Deep research 框架分析- Smolagents, LangGraph
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2025-03-05 10:51:24" itemprop="dateCreated datePublished" datetime="2025-03-05T10:51:24+08:00">2025-03-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-20 11:20:59" itemprop="dateModified" datetime="2025-03-20T11:20:59+08:00">2025-03-20</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <!-- # Deep research 框架分析- Smolagents, LangGraph -->
+
+<h3 id="1-簡介"><a href="#1-簡介" class="headerlink" title="1. 簡介"></a>1. 簡介</h3><p><strong>深度研究代理 (Deep Research Agent)</strong> 是一種專門用於執行深度研究任務的人工智慧代理，能自動化處理包括研究計劃制定、資料收集、推理、總結、撰寫研究報告等複雜任務。目前，在開源社群中，<strong>LangGraph</strong> 和 <strong>SmolAgent</strong> 是兩個備受關注的深度研究代理框架。本文旨在對這兩個框架進行深入的比較分析，探討它們各自的優缺點以及更適合的應用場景。</p>
+<span id="more"></span>
+
+<p>本文使用的模型為 <code>gpt-4o-mini</code>。</p>
+<h3 id="2-LangGraph"><a href="#2-LangGraph" class="headerlink" title="2. LangGraph"></a>2. LangGraph</h3><p><strong>LangGraph</strong> 是由 LangChain 團隊開發的框架。其核心理念是將複雜的研究任務拆解為多個更小的子任務，並利用工具和代理逐步解決這些子任務。</p>
+<p><img src="/images/20250305/deep_research_agents_langgraph.png" alt="Agent組成"></p>
+<p><strong>實現邏輯：</strong></p>
+<ul>
+<li><strong>雙圖結構：</strong> LangGraph 的架構包含 <code>outer graph</code> (外層圖) 和 <code>sub-graph</code> (子圖) 兩層結構。<ul>
+<li><strong>Outer Graph：</strong> 負責制定整體研究計畫，並調用多個 <code>sub-graph</code> 來執行具體的子任務。最終，它會整合所有子圖的結果，形成最終的研究報告。</li>
+<li><strong>Sub-Graph：</strong> 專注於執行特定的子任務的檢索和整理檢索結果。<br>ㄏ</li>
+</ul>
+</li>
+<li><strong>執行步驟：</strong> (如上圖)</li>
+</ul>
+<p><strong>優點：</strong></p>
+<ul>
+<li><strong>非工具調用方式：</strong> LangGraph 將搜尋邏輯直接融入節點中，而非傳統的工具調用方式。這使得即使是不具備 Tool&#x2F;Function calling 功能的語言模型 (LLM)，例如 <code>deepseek-r1</code>，也能夠使用 LangGraph 框架。</li>
+<li><strong>清晰的報告輸出：</strong> LangGraph使用pydantic框架，能夠生成結構清晰的報告，其中包含表格和參考資料連結。</li>
+<li><strong>速度優勢：</strong> 透過 <code>Send()</code> 方法，LangGraph 能夠讓多個 <code>sub-graph</code> 平行處理各自的任務。跟smolagent相比，在相同的問題下，LangGraph 通常能在三分鐘內完成研究任務。</li>
+</ul>
+<p><strong>缺點：</strong></p>
+<ul>
+<li><strong>準確性不足：</strong> 由於每個 <code>sub-graph</code> 獨立處理各自的 session (平行處理)，導致最終結果未能準確聚焦於問題核心。</li>
+<li><strong>工具支援度有限：</strong> LangGraph 內建的工具主要集中在查詢和轉換字串格式，對於影像或不同格式檔案的處理能力較弱。</li>
+</ul>
+<h3 id="3-SmolAgent"><a href="#3-SmolAgent" class="headerlink" title="3. SmolAgent"></a>3. SmolAgent</h3><p><strong>SmolAgent</strong> 是由 Hugging Face 團隊開發的輕量級框架，更強調內容的準確性和可靠性。</p>
+<p><strong>實現邏輯：</strong></p>
+<ul>
+<li><strong>雙代理結構：</strong> SmolAgent 採用雙代理架構，類似autogen，包含一個主代理 (<code>manager_agent</code>) 和多個受管理的代理 (<code>managed_agent</code>)。<ul>
+<li><p><strong>Manager Agent (主代理)：</strong> 負責制定整個研究計畫，並將具體的執行任務分配給 <code>managed_agent</code>。</p>
+</li>
+<li><p><strong>Text Webbrowser Agent (受管理代理)：</strong> 負責執行主代理分配的子計畫。每個 <code>managed_agent</code> 執行子計畫的流程也遵循 “計畫 (plan) → 網路搜尋 (web search) → 檢視網頁 (view) → 更新計畫 (update plan)” 的循環。</p>
+<details>
+<summary><strong>SmolAgent執行流程詳解</strong></summary>
+
+<ol>
+<li><strong>主代理制定計畫</strong></li>
+</ol>
+<ul>
+<li>主代理創建研究計畫 </li>
+<li>將個別子計畫分配給 <code>managed_agent</code> 執行</li>
+<li>子計畫儲存在 <code>memory.steps.PlanningStep</code> 中</li>
+</ul>
+<ol start="2">
+<li><strong>受管理代理執行子計畫</strong></li>
+</ol>
+<ul>
+<li>執行流程：計畫 → 網路搜尋 → 檢視網頁 → 更新計畫</li>
+<li>當得到 <code>final_answer</code> 時：<ul>
+<li>處理最終答案</li>
+<li>將答案儲存到 <code>memory_step.action_output</code></li>
+<li>返回最終答案，表示任務完成</li>
+</ul>
+</li>
+<li>相關程式碼位於 <code>src/agents.py</code></li>
+</ul>
+<ol start="3">
+<li><strong>記憶體機制 (AgentMemory)</strong></li>
+</ol>
+<ul>
+<li>記錄所有執行過程：<ul>
+<li>任務步驟 (<code>TaskStep</code>)</li>
+<li>工具調用 (<code>ActionStep</code>)</li>
+<li>計畫 (<code>PlanningStep</code>)</li>
+</ul>
+</li>
+<li>每次處理邏輯前，使用 <code>write_memory_to_messages()</code> 將記憶轉換為模型輸入</li>
+<li>相關程式碼位於 <code>src/smolagents/memory.py</code></li>
+</ul>
+</details></li>
+</ul>
+</li>
+</ul>
+<p><strong>優點：</strong></p>
+<ul>
+<li><strong>準確性高：</strong> 透過 <code>AgentMemory</code> 類別，SmolAgent 在每次處理步驟時都會回顧先前的執行歷程，並將其整理到訊息中。這種記憶體機制使得 SmolAgent 能夠生成更準確和內容連貫的研究結果。</li>
+<li><strong>多格式支援：</strong> 支援圖片、影片及檔案等格式的處理，擴大了應用範圍。</li>
+</ul>
+<p><strong>缺點：</strong></p>
+<ul>
+<li><strong>速度較慢：</strong>  SmolAgent 的回覆速度可能較慢，通常需要 5 分鐘以上才能完成研究任務。ㄏ在 <code>managed_agent</code> 執行子計畫時，並未觀察到平行處理機制。</li>
+<li><strong>擴展性受限：</strong>  量級的設計可能限制了其在處理複雜任務時的擴展性。</li>
+</ul>
+<h3 id="4-比較分析"><a href="#4-比較分析" class="headerlink" title="4. 比較分析"></a>4. 比較分析</h3><p>為了更直觀地比較 LangGraph 和 SmolAgent 的性能，我們使用以下問題進行測試：</p>
+<ul>
+<li><p><strong>問題：</strong></p>
+<details>
+<summary>這篇文章講到的使用某個技術，可以降低延遲；請詳細說明技術的邏輯，並使用簡單的例子舉例說明</summary>
+
+<blockquote>
+<p>Initially, this agentic workflow incurred 5-9 seconds of latency, and having users wait that long for responses led to a bad experience. To address this, we came up with the following latency reduction technique. The system quickly generates a pre-response (short for preliminary response) that can be uttered quickly, which buys time for an agentic workflow to generate a more thoughtful, full response. (We’re grateful to LiveKit’s CEO Russ d’Sa and team for helping us get this working.) This is similar to how, if you were to ask me a complicated question, I might say “Hmm, let me think about that” or “Sure, I can help with that” — that’s the pre-response — while thinking about what my full response might be.</p>
+</blockquote>
+</details>
+</li>
+<li><p><strong>回覆結果：</strong></p>
+<ul>
+<li><p><strong>LangGraph：</strong> (<a target="_blank" rel="noopener" href="https://docs.google.com/document/d/1dU2FLWi9V_3azSsd-Ejm6BFEZDwxqWcd0xtkUyWUvAg/edit?usp=sharing">連結</a>)</p>
+<ul>
+<li>LangGraph 的回覆涉及大量與「降低延遲」相關的技術，例如快取、負載均衡、CDN 等。然而，這些技術與 Pre-Response 技術的核心機制關聯性較弱，顯示其未能準確聚焦於問題的核心。</li>
+</ul>
+</li>
+<li><p><strong>SmolAgent：</strong> (<a target="_blank" rel="noopener" href="https://docs.google.com/document/d/1UUH3fjmycCGmMxX8kaiKkrv7qS6-IBT01C6WfRXQWhk/edit?usp=sharing">連結</a>)</p>
+<ul>
+<li>SmolAgent 的回覆明確解釋了「Pre-Response 技術」的邏輯，與原始文章的描述高度一致。</li>
+<li>SmolAgent 詳細說明了該技術的運作方式，包括即時回應、背景處理以及最終回應的流程。</li>
+<li>SmolAgent 給出了簡單且貼切的例子來說明 Pre-Response 技術，例如以 “Hmm, let me think about that” 作為預先回應。</li>
+<li>SmolAgent 的回覆內容緊扣主題，沒有擴展到與 Pre-Response 技術無關的內容。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">LangGraph</th>
+<th align="left">SmolAgent</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>速度</strong></td>
+<td align="left">快</td>
+<td align="left">慢</td>
+</tr>
+<tr>
+<td align="left"><strong>準確性</strong></td>
+<td align="left">低</td>
+<td align="left">高<sup>1</sup></td>
+</tr>
+<tr>
+<td align="left"><strong>開源模型支持</strong></td>
+<td align="left">高<sup>2</sup></td>
+<td align="left">中<sup>3</sup></td>
+</tr>
+</tbody></table>
+<details>
+<summary><strong>表格備註</strong></summary>
+
+<ol>
+<li><strong>準確性評估：</strong> SmolAgent 還使用了 GAIA Benchmark 進行評分。評分方法可參考 <code>run.gaia.py</code>，該腳本使用多線程執行 GAIA dataset 中的問題，將結果儲存為 JSON 檔案後，再使用 <code>analysis.ipynb</code> 進行評分分析。</li>
+<li><strong>開源模型支持 (LangGraph)：</strong> LangGraph 支持大部分開源模型。在測試中，其 planning 階段使用了 <code>deepseek-r1-distill-llama-70b</code> 模型，writing 階段使用了 <code>llama-3.3-70b-versatile</code> 模型。</li>
+<li><strong>開源模型支持 (SmolAgent)：</strong> SmolAgent  目前主要支援具備 Tool&#x2F;Function calling 功能的模型。在測試中，使用 <code>Qwen/Qwen2.5-Coder-32B-Instruct</code> 模型執行時，SmolAgent 一直未能得到 <code>final_answer</code>。</li>
+</ol>
+</details>
+
+<h3 id="5-結論："><a href="#5-結論：" class="headerlink" title="5. 結論："></a>5. 結論：</h3><pre><code>•	LangGraph 適合處理快速回應的研究任務，尤其在對時間要求較高的情境下，具有優勢。然而，其準確性和工具支援仍有待提升。
+•	SmolAgent 在準確性方面表現出色，尤其適合需要高準確度的複雜研究任務，但其速度較慢且擴展性有限。
+</code></pre>
+<h3 id="6-TODO"><a href="#6-TODO" class="headerlink" title="6. TODO"></a>6. TODO</h3><p>LangGraph 可以透過以下方式進一步優化：</p>
+<ul>
+<li><strong>改進 Prompt (提示詞)：</strong> 設計更明確且更具引導性的 Prompt，以引導 LangGraph 進行更深入的推理，提升其準確性。</li>
+<li><strong>增加工具：</strong> 整合更豐富的工具，例如 Web Search 工具，使 LangGraph 能夠更有效地動態查詢和獲取外部資料，以應對更複雜的研究任務。</li>
+</ul>
+<h2 id="附錄"><a href="#附錄" class="headerlink" title="附錄"></a>附錄</h2><h3 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/langchain-ai/open_deep_research">LangGraph</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/huggingface/smolagents/tree/gaia-submission-r1/examples/open_deep_research">SmolAgent</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/huggingface/p/18291426">GAIA benchmark</a></li>
+</ul>
+<hr>
+<!-- Place this tag in your head or just before your close body tag. -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+<!-- Place this tag where you want the button to render. -->
+
+<p>Please <a class="github-button" target="_blank" rel="noopener" href="https://github.com/wu0up/deep_research_study" data-icon="octicon-star" aria-label="Star wu0up/deep_research_study on GitHub">Star</a> this Project if you like it! <a class="github-button" target="_blank" rel="noopener" href="https://github.com/wu0up" aria-label="Follow @wu0up on GitHub">Follow</a> would also be appreciated!<br>Peace!</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+              <a href="/tags/framework/" rel="tag"># framework</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/09/02/20240902/" rel="prev" title="[論文分析] A Survey on Large Language Model based Autonomous Agents">
+      <i class="fa fa-chevron-left"></i> [論文分析] A Survey on Large Language Model based Autonomous Agents
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2025/03/18/20250318/" rel="next" title="[course]build apps with windsurfs ai coding agents">
+      [course]build apps with windsurfs ai coding agents <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%B0%A1%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">1. 簡介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-LangGraph"><span class="nav-number">2.</span> <span class="nav-text">2. LangGraph</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-SmolAgent"><span class="nav-number">3.</span> <span class="nav-text">3. SmolAgent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E6%AF%94%E8%BC%83%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">4. 比較分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E7%B5%90%E8%AB%96%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">5. 結論：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-TODO"><span class="nav-number">6.</span> <span class="nav-text">6. TODO</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%84%E9%8C%84"><span class="nav-number"></span> <span class="nav-text">附錄</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%83%E8%80%83%E8%B3%87%E6%96%99"><span class="nav-number">1.</span> <span class="nav-text">參考資料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Vivian Ou</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Vivian Ou</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
