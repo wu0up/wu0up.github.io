@@ -46,148 +46,6 @@ Peace! -->]]></content>
       </tags>
   </entry>
   <entry>
-    <title>[論文分析] A Survey on Large Language Model based Autonomous Agents</title>
-    <url>/2024/09/02/20240902/</url>
-    <content><![CDATA[<!-- # [論文分析] A Survey on Large Language Model based Autonomous Agents -->
-
-<p><strong>設計LLM代理架構：如何支援工作流程、管理記憶與評估效能</strong></p>
-<p>為什麼讀這篇論文：目前正在開發平台，因此選擇這篇論文，想了解代理開發的框架</p>
-<span id="more"></span>
-
-<p>針對自動化代理平台設計，本篇提供統一框架：</p>
-<ul>
-<li>輪廓模組（Profiling Module）：設定代理角色的基本屬性（例如年齡、性別、職業等）。</li>
-<li>記憶模組（Memory Module）：短期和長期記憶幫助代理記錄並使用過去的行為來規劃未來。</li>
-<li>規劃模組（Planning Module）：代理根據任務分解目標，規劃步驟並調整行動。</li>
-<li>行動模組（Action Module）：將規劃轉化為具體的行為並與環境互動。</li>
-</ul>
-<p> <img src="/images/20240902/agent_architecture.png" alt="image"></p>
-<p>將會針對Profiling Module和Planning Module進行筆記；</p>
-<h3 id="1-該選用哪一種Profiling-Module的方法？"><a href="#1-該選用哪一種Profiling-Module的方法？" class="headerlink" title="1. 該選用哪一種Profiling Module的方法？"></a>1. 該選用哪一種Profiling Module的方法？</h3><p>針對此篇paper介紹的Profiling Module三種方法，整理成表格：</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>Handcrafting Method</th>
-<th>LLM-generation Method</th>
-<th>Dataset Alignment Method</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>簡介</strong></td>
-<td>手動設計代理的配置，包括人格特徵和職責。</td>
-<td>利用LLM自動生成代理配置，基於配置生成規則和少樣本示例。</td>
-<td>基於真實數據集或現有用戶行為數據來對齊代理行為，模擬真實世界的反應。</td>
-</tr>
-<tr>
-<td><strong>優點</strong></td>
-<td>靈活性強，可以根據需要分配任意配置。</td>
-<td>在處理大量代理時節省時間。</td>
-<td>基於真實數據生成代理行為，能夠反映現實情境，可信度高。</td>
-</tr>
-<tr>
-<td><strong>缺點</strong></td>
-<td>處理大量代理時，可能非常耗時且勞動密集。</td>
-<td>可能無法精確控制生成的配置。</td>
-<td>需要大量高質量的數據，且代理的靈活性受限於數據內容。</td>
-</tr>
-<tr>
-<td><strong>相關project</strong></td>
-<td>Generative Agent、MetaGPT、ChatDev、Self-collaboration 和 PTLLM</td>
-<td>RecAgent</td>
-<td>SocialSimulacra、GPT-3 和 Amercian National Election Studies (ANES)</td>
-</tr>
-</tbody></table>
-<p>示範代碼</p>
-<p><strong>Handcrafting Method</strong></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> PromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain.llms <span class="keyword">import</span> OpenAI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定義手工設計的代理角色和行為</span></span><br><span class="line">template = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">你是一位非常有經驗的軟體開發顧問，你需要幫助一個新手開發者設計一個簡單的聊天機器人。請具體描述設計過程的步驟。</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">prompt = PromptTemplate(input_variables=[], template=template)</span><br><span class="line"></span><br><span class="line">llm = OpenAI(model=<span class="string">&quot;gpt-3.5-turbo&quot;</span>) <span class="comment"># 使用OpenAI作為LLM</span></span><br><span class="line">response = llm(prompt.<span class="built_in">format</span>())</span><br><span class="line"><span class="built_in">print</span>(response)</span><br></pre></td></tr></table></figure>
-
-<p><strong>LLM-generation Method</strong></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> FewShotPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain.llms <span class="keyword">import</span> OpenAI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定義少量範例來生成更多代理角色</span></span><br><span class="line">examples = [</span><br><span class="line">    &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;軟體開發者&quot;</span>, <span class="string">&quot;behavior&quot;</span>: <span class="string">&quot;你需要為一個簡單的網站設計後端邏輯&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;數據科學家&quot;</span>, <span class="string">&quot;behavior&quot;</span>: <span class="string">&quot;你需要分析一個銷售數據集，並找出關鍵趨勢&quot;</span>&#125;</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定義 Few-shot Prompt</span></span><br><span class="line">example_formatter = <span class="keyword">lambda</span> example: <span class="string">f&quot;角色: <span class="subst">&#123;example[<span class="string">&#x27;role&#x27;</span>]&#125;</span>\n行為: <span class="subst">&#123;example[<span class="string">&#x27;behavior&#x27;</span>]&#125;</span>\n&quot;</span></span><br><span class="line">template = FewShotPromptTemplate(</span><br><span class="line">    examples=examples,</span><br><span class="line">    example_prompt=example_formatter,</span><br><span class="line">    prefix=<span class="string">&quot;這裡有兩個不同的角色例子，請生成一個新的角色並描述其行為。&quot;</span>,</span><br><span class="line">    input_variables=[<span class="string">&quot;role&quot;</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">llm = OpenAI(model=<span class="string">&quot;gpt-3.5-turbo&quot;</span>)</span><br><span class="line">new_role = <span class="string">&quot;系統管理員&quot;</span></span><br><span class="line">response = llm(template.<span class="built_in">format</span>(role=new_role))</span><br><span class="line"><span class="built_in">print</span>(response)</span><br></pre></td></tr></table></figure>
-
-<p><strong>Dataset Alignment Method</strong></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> PromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain.chains <span class="keyword">import</span> LLMChain</span><br><span class="line"><span class="keyword">from</span> langchain.llms <span class="keyword">import</span> OpenAI</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 假設我們有一個數據集，包含不同年齡段的用戶及其喜歡的電影類型</span></span><br><span class="line">data = pd.DataFrame(&#123;</span><br><span class="line">    <span class="string">&quot;age_group&quot;</span>: [<span class="string">&quot;18-25&quot;</span>, <span class="string">&quot;26-35&quot;</span>, <span class="string">&quot;36-50&quot;</span>],</span><br><span class="line">    <span class="string">&quot;preferred_genre&quot;</span>: [<span class="string">&quot;動作片&quot;</span>, <span class="string">&quot;愛情片&quot;</span>, <span class="string">&quot;紀錄片&quot;</span>]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 根據年齡段生成代理行為</span></span><br><span class="line">template = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">根據用戶的年齡段 &#123;age_group&#125;，請推薦他們可能喜歡的電影類型：&#123;preferred_genre&#125;。</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">prompt = PromptTemplate(input_variables=[<span class="string">&quot;age_group&quot;</span>, <span class="string">&quot;preferred_genre&quot;</span>], template=template)</span><br><span class="line"></span><br><span class="line">llm = OpenAI(model=<span class="string">&quot;gpt-3.5-turbo&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> index, row <span class="keyword">in</span> data.iterrows():</span><br><span class="line">    chain = LLMChain(llm=llm, prompt=prompt)</span><br><span class="line">    response = chain.run(&#123;<span class="string">&quot;age_group&quot;</span>: row[<span class="string">&#x27;age_group&#x27;</span>], <span class="string">&quot;preferred_genre&quot;</span>: row[<span class="string">&#x27;preferred_genre&#x27;</span>]&#125;)</span><br><span class="line">    <span class="built_in">print</span>(response)</span><br></pre></td></tr></table></figure>
-
-
-<h3 id="2-如何有效管理和調用代理的記憶與歷史數據？"><a href="#2-如何有效管理和調用代理的記憶與歷史數據？" class="headerlink" title="2. 如何有效管理和調用代理的記憶與歷史數據？"></a>2. 如何有效管理和調用代理的記憶與歷史數據？</h3><p> <img src="/images/20240902/planning.png" alt="image"></p>
-<h3 id="一、無反饋規劃-Planning-without-Feedback"><a href="#一、無反饋規劃-Planning-without-Feedback" class="headerlink" title="一、無反饋規劃 (Planning without Feedback)"></a>一、無反饋規劃 (Planning without Feedback)</h3><table>
-<thead>
-<tr>
-<th>策略</th>
-<th>代表方法</th>
-<th>特點</th>
-<th>優點</th>
-<th>缺點</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>單路徑推理</td>
-<td>Chain of Thought (CoT), Zero-shot-CoT, RePrompting, ReWOO, HuggingGPT</td>
-<td>將任務分解為幾個中間步驟，以級聯方式連接</td>
-<td>簡單直觀，易於實現；適合處理線性思維的任務</td>
-<td>缺乏靈活性，無法處理複雜任務；容易受到早期錯誤的影響</td>
-</tr>
-<tr>
-<td>多路徑推理</td>
-<td>Self-consistent CoT (CoT-SC), Tree of Thoughts (ToT), RecMind, Graph of Thoughts (GoT)</td>
-<td>步驟組織成樹狀結構，每個步驟可能有多個後續步驟</td>
-<td>更接近人類思維，能考慮多種可能性；適合複雜任務</td>
-<td>計算成本高，可能導致決策困難</td>
-</tr>
-<tr>
-<td>外部規劃器</td>
-<td>LLM+P, LLM-DP, CO-LLM</td>
-<td>利用外部規劃器生成計劃</td>
-<td>能利用高效規劃算法，適合特定領域的問題</td>
-<td>需要額外的轉換步驟，可能受限於外部規劃器的能力</td>
-</tr>
-</tbody></table>
-<h3 id="二、有反饋規劃-Planning-with-Feedback"><a href="#二、有反饋規劃-Planning-with-Feedback" class="headerlink" title="二、有反饋規劃 (Planning with Feedback)"></a>二、有反饋規劃 (Planning with Feedback)</h3><table>
-<thead>
-<tr>
-<th>反饋來源</th>
-<th>代表方法</th>
-<th>特點</th>
-<th>優點</th>
-<th>缺點</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>環境反饋</td>
-<td>ReAct, Voyager, Ghost, SayPlan, DEPS, LLM-Planner, Inner Monologue</td>
-<td>從客觀世界或虛擬環境獲取反饋</td>
-<td>能適應動態變化的環境，更接近真實世界的解決方式</td>
-<td>需要設計環境模擬器，可能需要大量試錯過程</td>
-</tr>
-<tr>
-<td>人類反饋</td>
-<td>Inner Monologue</td>
-<td>直接與人類互動獲取反饋</td>
-<td>更好對齊人類價值觀，有助於緩解幻覺問題</td>
-<td>需要人類持續參與，成本高；可能受人類偏見影響</td>
-</tr>
-<tr>
-<td>模型反饋</td>
-<td>Self-refine, SelfCheck, InterAct, ChatCoT, Reflexion</td>
-<td>使用預訓練模型生成內部反饋</td>
-<td>不需外部資源，自主改進；提供詳細的語言反饋</td>
-<td>可能受模型局限性影響，難以引入新信息</td>
-</tr>
-</tbody></table>
-<h3 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h3><p>以目前開發架構，為了快速產生一個基礎架構，會先使用handcrafting method 搭配ReAct進行</p>
-<hr>
-<!-- <!-- Place this tag in your head or just before your close body tag. -->
-<!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
-<!-- <!-- Place this tag where you want the button to render. -->
-
-<!-- Please <a class="github-button" href="https://github.com/YenYuHsuan/hexo-theme-beantech" data-icon="octicon-star" aria-label="Star YenYuHsuan/hexo-theme-beantech on GitHub">Star</a> this Project if you like it! <a class="github-button" href="https://github.com/YenYuHsuan" aria-label="Follow @YenYuHsuan on GitHub">Follow</a> would also be appreciated!
-Peace! -->]]></content>
-      <tags>
-        <tag>paper</tag>
-        <tag>Agent</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>[course]build apps with windsurfs ai coding agents</title>
     <url>/2025/03/18/20250318/</url>
     <content><![CDATA[<!-- # [course]解析 Windsurf AI Coding Agents：從傳統 Agent 到 Cascade Agent -->
@@ -329,8 +187,8 @@ Peace! -->]]></content>
 <p><a class="github-button" href="https://github.com/wu0up" aria-label="Follow @wu0up on GitHub">Follow</a> would also be appreciated!<br>Peace!</p>
 ]]></content>
       <tags>
-        <tag>Agent</tag>
         <tag>coding</tag>
+        <tag>Agent</tag>
         <tag>course</tag>
       </tags>
   </entry>
@@ -509,6 +367,148 @@ Peace! -->]]></content>
       <tags>
         <tag>Agent</tag>
         <tag>framework</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>[論文分析] A Survey on Large Language Model based Autonomous Agents</title>
+    <url>/2024/09/02/20240902/</url>
+    <content><![CDATA[<!-- # [論文分析] A Survey on Large Language Model based Autonomous Agents -->
+
+<p><strong>設計LLM代理架構：如何支援工作流程、管理記憶與評估效能</strong></p>
+<p>為什麼讀這篇論文：目前正在開發平台，因此選擇這篇論文，想了解代理開發的框架</p>
+<span id="more"></span>
+
+<p>針對自動化代理平台設計，本篇提供統一框架：</p>
+<ul>
+<li>輪廓模組（Profiling Module）：設定代理角色的基本屬性（例如年齡、性別、職業等）。</li>
+<li>記憶模組（Memory Module）：短期和長期記憶幫助代理記錄並使用過去的行為來規劃未來。</li>
+<li>規劃模組（Planning Module）：代理根據任務分解目標，規劃步驟並調整行動。</li>
+<li>行動模組（Action Module）：將規劃轉化為具體的行為並與環境互動。</li>
+</ul>
+<p> <img src="/images/20240902/agent_architecture.png" alt="image"></p>
+<p>將會針對Profiling Module和Planning Module進行筆記；</p>
+<h3 id="1-該選用哪一種Profiling-Module的方法？"><a href="#1-該選用哪一種Profiling-Module的方法？" class="headerlink" title="1. 該選用哪一種Profiling Module的方法？"></a>1. 該選用哪一種Profiling Module的方法？</h3><p>針對此篇paper介紹的Profiling Module三種方法，整理成表格：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Handcrafting Method</th>
+<th>LLM-generation Method</th>
+<th>Dataset Alignment Method</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>簡介</strong></td>
+<td>手動設計代理的配置，包括人格特徵和職責。</td>
+<td>利用LLM自動生成代理配置，基於配置生成規則和少樣本示例。</td>
+<td>基於真實數據集或現有用戶行為數據來對齊代理行為，模擬真實世界的反應。</td>
+</tr>
+<tr>
+<td><strong>優點</strong></td>
+<td>靈活性強，可以根據需要分配任意配置。</td>
+<td>在處理大量代理時節省時間。</td>
+<td>基於真實數據生成代理行為，能夠反映現實情境，可信度高。</td>
+</tr>
+<tr>
+<td><strong>缺點</strong></td>
+<td>處理大量代理時，可能非常耗時且勞動密集。</td>
+<td>可能無法精確控制生成的配置。</td>
+<td>需要大量高質量的數據，且代理的靈活性受限於數據內容。</td>
+</tr>
+<tr>
+<td><strong>相關project</strong></td>
+<td>Generative Agent、MetaGPT、ChatDev、Self-collaboration 和 PTLLM</td>
+<td>RecAgent</td>
+<td>SocialSimulacra、GPT-3 和 Amercian National Election Studies (ANES)</td>
+</tr>
+</tbody></table>
+<p>示範代碼</p>
+<p><strong>Handcrafting Method</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> PromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain.llms <span class="keyword">import</span> OpenAI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定義手工設計的代理角色和行為</span></span><br><span class="line">template = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">你是一位非常有經驗的軟體開發顧問，你需要幫助一個新手開發者設計一個簡單的聊天機器人。請具體描述設計過程的步驟。</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">prompt = PromptTemplate(input_variables=[], template=template)</span><br><span class="line"></span><br><span class="line">llm = OpenAI(model=<span class="string">&quot;gpt-3.5-turbo&quot;</span>) <span class="comment"># 使用OpenAI作為LLM</span></span><br><span class="line">response = llm(prompt.<span class="built_in">format</span>())</span><br><span class="line"><span class="built_in">print</span>(response)</span><br></pre></td></tr></table></figure>
+
+<p><strong>LLM-generation Method</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> FewShotPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain.llms <span class="keyword">import</span> OpenAI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定義少量範例來生成更多代理角色</span></span><br><span class="line">examples = [</span><br><span class="line">    &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;軟體開發者&quot;</span>, <span class="string">&quot;behavior&quot;</span>: <span class="string">&quot;你需要為一個簡單的網站設計後端邏輯&quot;</span>&#125;,</span><br><span class="line">    &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;數據科學家&quot;</span>, <span class="string">&quot;behavior&quot;</span>: <span class="string">&quot;你需要分析一個銷售數據集，並找出關鍵趨勢&quot;</span>&#125;</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定義 Few-shot Prompt</span></span><br><span class="line">example_formatter = <span class="keyword">lambda</span> example: <span class="string">f&quot;角色: <span class="subst">&#123;example[<span class="string">&#x27;role&#x27;</span>]&#125;</span>\n行為: <span class="subst">&#123;example[<span class="string">&#x27;behavior&#x27;</span>]&#125;</span>\n&quot;</span></span><br><span class="line">template = FewShotPromptTemplate(</span><br><span class="line">    examples=examples,</span><br><span class="line">    example_prompt=example_formatter,</span><br><span class="line">    prefix=<span class="string">&quot;這裡有兩個不同的角色例子，請生成一個新的角色並描述其行為。&quot;</span>,</span><br><span class="line">    input_variables=[<span class="string">&quot;role&quot;</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">llm = OpenAI(model=<span class="string">&quot;gpt-3.5-turbo&quot;</span>)</span><br><span class="line">new_role = <span class="string">&quot;系統管理員&quot;</span></span><br><span class="line">response = llm(template.<span class="built_in">format</span>(role=new_role))</span><br><span class="line"><span class="built_in">print</span>(response)</span><br></pre></td></tr></table></figure>
+
+<p><strong>Dataset Alignment Method</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.prompts <span class="keyword">import</span> PromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain.chains <span class="keyword">import</span> LLMChain</span><br><span class="line"><span class="keyword">from</span> langchain.llms <span class="keyword">import</span> OpenAI</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 假設我們有一個數據集，包含不同年齡段的用戶及其喜歡的電影類型</span></span><br><span class="line">data = pd.DataFrame(&#123;</span><br><span class="line">    <span class="string">&quot;age_group&quot;</span>: [<span class="string">&quot;18-25&quot;</span>, <span class="string">&quot;26-35&quot;</span>, <span class="string">&quot;36-50&quot;</span>],</span><br><span class="line">    <span class="string">&quot;preferred_genre&quot;</span>: [<span class="string">&quot;動作片&quot;</span>, <span class="string">&quot;愛情片&quot;</span>, <span class="string">&quot;紀錄片&quot;</span>]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 根據年齡段生成代理行為</span></span><br><span class="line">template = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">根據用戶的年齡段 &#123;age_group&#125;，請推薦他們可能喜歡的電影類型：&#123;preferred_genre&#125;。</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">prompt = PromptTemplate(input_variables=[<span class="string">&quot;age_group&quot;</span>, <span class="string">&quot;preferred_genre&quot;</span>], template=template)</span><br><span class="line"></span><br><span class="line">llm = OpenAI(model=<span class="string">&quot;gpt-3.5-turbo&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> index, row <span class="keyword">in</span> data.iterrows():</span><br><span class="line">    chain = LLMChain(llm=llm, prompt=prompt)</span><br><span class="line">    response = chain.run(&#123;<span class="string">&quot;age_group&quot;</span>: row[<span class="string">&#x27;age_group&#x27;</span>], <span class="string">&quot;preferred_genre&quot;</span>: row[<span class="string">&#x27;preferred_genre&#x27;</span>]&#125;)</span><br><span class="line">    <span class="built_in">print</span>(response)</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="2-如何有效管理和調用代理的記憶與歷史數據？"><a href="#2-如何有效管理和調用代理的記憶與歷史數據？" class="headerlink" title="2. 如何有效管理和調用代理的記憶與歷史數據？"></a>2. 如何有效管理和調用代理的記憶與歷史數據？</h3><p> <img src="/images/20240902/planning.png" alt="image"></p>
+<h3 id="一、無反饋規劃-Planning-without-Feedback"><a href="#一、無反饋規劃-Planning-without-Feedback" class="headerlink" title="一、無反饋規劃 (Planning without Feedback)"></a>一、無反饋規劃 (Planning without Feedback)</h3><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>代表方法</th>
+<th>特點</th>
+<th>優點</th>
+<th>缺點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>單路徑推理</td>
+<td>Chain of Thought (CoT), Zero-shot-CoT, RePrompting, ReWOO, HuggingGPT</td>
+<td>將任務分解為幾個中間步驟，以級聯方式連接</td>
+<td>簡單直觀，易於實現；適合處理線性思維的任務</td>
+<td>缺乏靈活性，無法處理複雜任務；容易受到早期錯誤的影響</td>
+</tr>
+<tr>
+<td>多路徑推理</td>
+<td>Self-consistent CoT (CoT-SC), Tree of Thoughts (ToT), RecMind, Graph of Thoughts (GoT)</td>
+<td>步驟組織成樹狀結構，每個步驟可能有多個後續步驟</td>
+<td>更接近人類思維，能考慮多種可能性；適合複雜任務</td>
+<td>計算成本高，可能導致決策困難</td>
+</tr>
+<tr>
+<td>外部規劃器</td>
+<td>LLM+P, LLM-DP, CO-LLM</td>
+<td>利用外部規劃器生成計劃</td>
+<td>能利用高效規劃算法，適合特定領域的問題</td>
+<td>需要額外的轉換步驟，可能受限於外部規劃器的能力</td>
+</tr>
+</tbody></table>
+<h3 id="二、有反饋規劃-Planning-with-Feedback"><a href="#二、有反饋規劃-Planning-with-Feedback" class="headerlink" title="二、有反饋規劃 (Planning with Feedback)"></a>二、有反饋規劃 (Planning with Feedback)</h3><table>
+<thead>
+<tr>
+<th>反饋來源</th>
+<th>代表方法</th>
+<th>特點</th>
+<th>優點</th>
+<th>缺點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>環境反饋</td>
+<td>ReAct, Voyager, Ghost, SayPlan, DEPS, LLM-Planner, Inner Monologue</td>
+<td>從客觀世界或虛擬環境獲取反饋</td>
+<td>能適應動態變化的環境，更接近真實世界的解決方式</td>
+<td>需要設計環境模擬器，可能需要大量試錯過程</td>
+</tr>
+<tr>
+<td>人類反饋</td>
+<td>Inner Monologue</td>
+<td>直接與人類互動獲取反饋</td>
+<td>更好對齊人類價值觀，有助於緩解幻覺問題</td>
+<td>需要人類持續參與，成本高；可能受人類偏見影響</td>
+</tr>
+<tr>
+<td>模型反饋</td>
+<td>Self-refine, SelfCheck, InterAct, ChatCoT, Reflexion</td>
+<td>使用預訓練模型生成內部反饋</td>
+<td>不需外部資源，自主改進；提供詳細的語言反饋</td>
+<td>可能受模型局限性影響，難以引入新信息</td>
+</tr>
+</tbody></table>
+<h3 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h3><p>以目前開發架構，為了快速產生一個基礎架構，會先使用handcrafting method 搭配ReAct進行</p>
+<hr>
+<!-- <!-- Place this tag in your head or just before your close body tag. -->
+<!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
+<!-- <!-- Place this tag where you want the button to render. -->
+
+<!-- Please <a class="github-button" href="https://github.com/YenYuHsuan/hexo-theme-beantech" data-icon="octicon-star" aria-label="Star YenYuHsuan/hexo-theme-beantech on GitHub">Star</a> this Project if you like it! <a class="github-button" href="https://github.com/YenYuHsuan" aria-label="Follow @YenYuHsuan on GitHub">Follow</a> would also be appreciated!
+Peace! -->]]></content>
+      <tags>
+        <tag>paper</tag>
+        <tag>Agent</tag>
       </tags>
   </entry>
 </search>
